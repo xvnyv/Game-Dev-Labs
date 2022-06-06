@@ -6,17 +6,19 @@ TagManager:
   tags:
   - Ground
   - Enemy
+  - Obstacle
+  - Ground-Obstacle
   layers:
   - Default
   - TransparentFX
   - Ignore Raycast
-  - 
+  - Spawned
   - Water
   - UI
-  - 
-  - 
-  - 
-  - 
+  - QuestionBox
+  - Obstacles
+  - Limits
+  - Background
   - 
   - 
   - 
@@ -40,6 +42,9 @@ TagManager:
   - 
   - 
   m_SortingLayers:
+  - name: Background
+    uniqueID: 2286107057
+    locked: 0
   - name: Default
     uniqueID: 0
     locked: 0

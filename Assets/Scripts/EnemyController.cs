@@ -60,4 +60,9 @@ public class EnemyController : MonoBehaviour
         // enemySprite.transform.position = new Vector2(2.5f, -0.46f);
         transform.position = new Vector2(2.5f, -0.46f);
     }
+
+    private void Testing()
+    {
+
+    }
 }

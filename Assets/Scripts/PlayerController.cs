@@ -20,15 +20,20 @@ public class PlayerController : MonoBehaviour
     private int score = 0;
     private bool countScoreState = false;
     private bool onGroundState = true;
+    private Animator marioAnimator;
+    private AudioSource marioAudio;
 
     // Start is called before the first frame update
     void Start()
     {
+        Debug.Log("Player controller started");
         Application.targetFrameRate = 30;
         marioBody = GetComponent<Rigidbody2D>();
         marioSprite = GetComponent<SpriteRenderer>();
         menuController = FindObjectOfType<MenuController>();
         enemyController = FindObjectOfType<EnemyController>();
+        marioAnimator = GetComponent<Animator>();
+        marioAudio = GetComponent<AudioSource>();
     }
 
     // Update is called once per frame
@@ -39,13 +44,27 @@ public class PlayerController : MonoBehaviour
         {
             faceRightState = false;
             marioSprite.flipX = true;
+
+            // check velocity
+            if (Mathf.Abs(marioBody.velocity.x) > 0.05)
+            {
+                marioAnimator.SetTrigger("onSkid");
+            }
         }
 
         if (Input.GetKeyDown("d") && !faceRightState)
         {
             faceRightState = true;
             marioSprite.flipX = false;
+
+            // check velocity
+            if (Mathf.Abs(marioBody.velocity.x) > 0.05)
+            {
+                marioAnimator.SetTrigger("onSkid");
+            }
         }
+
+        marioAnimator.SetFloat("xSpeed", Mathf.Abs(marioBody.velocity.x));
 
         // when jumping, and Gomba is near Mario and we haven't registered our score
         if (!onGroundState && countScoreState && !gameOver)
@@ -54,7 +73,6 @@ public class PlayerController : MonoBehaviour
             {
                 countScoreState = false;
                 score++;
-                Debug.Log(score);
             }
         }
     }
@@ -81,6 +99,8 @@ public class PlayerController : MonoBehaviour
                 marioBody.AddForce(Vector2.up * upSpeed, ForceMode2D.Impulse);
                 onGroundState = false;
                 countScoreState = true; //check if Gomba is underneath
+
+                marioAnimator.SetBool("onGround", onGroundState);
             }
         }
     }
@@ -92,11 +112,19 @@ public class PlayerController : MonoBehaviour
         {
             onGroundState = true; // back on ground
             countScoreState = false; // reset score state
+            marioAnimator.SetBool("onGround", onGroundState);
             if (!gameOver)
             {
                 scoreText.text = "Score: " + score.ToString();
             }
         };
+
+        if (col.gameObject.CompareTag("Obstacle") && !onGroundState && Mathf.Abs(marioBody.velocity.y) <= 0.01f)
+        {
+            onGroundState = true; // back on ground
+            countScoreState = false; // reset score state
+            marioAnimator.SetBool("onGround", onGroundState);
+        }
     }
 
     void OnTriggerEnter2D(Collider2D other)
@@ -120,5 +148,12 @@ public class PlayerController : MonoBehaviour
         marioSprite.flipX = false;
         onGroundState = true;
         faceRightState = true;
+        marioAnimator.SetBool("onGround", onGroundState);
     }
+
+    void PlayJumpSound()
+    {
+        marioAudio.PlayOneShot(marioAudio.clip);
+    }
+
 }
