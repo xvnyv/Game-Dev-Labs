@@ -35,6 +35,10 @@ public class QuestionBoxController : MonoBehaviour
             // begin check to disable object's spring and rigidbody
             StartCoroutine(DisableHittable());
         }
+        if (col.gameObject.name == "GoldenMushroom")
+        {
+            Debug.Log("hit");
+        }
     }
 
     bool ObjectMovedAndStopped()

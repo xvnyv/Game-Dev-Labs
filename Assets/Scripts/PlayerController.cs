@@ -23,6 +23,8 @@ public class PlayerController : MonoBehaviour
     private Animator marioAnimator;
     private AudioSource marioAudio;
 
+    public ParticleSystem dustCloud;
+
     // Start is called before the first frame update
     void Start()
     {
@@ -113,6 +115,7 @@ public class PlayerController : MonoBehaviour
             onGroundState = true; // back on ground
             countScoreState = false; // reset score state
             marioAnimator.SetBool("onGround", onGroundState);
+            dustCloud.Play();
             if (!gameOver)
             {
                 scoreText.text = "Score: " + score.ToString();
