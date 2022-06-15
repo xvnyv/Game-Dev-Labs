@@ -4,9 +4,9 @@ using UnityEngine;
 
 public class ConsumableMushroomController : MonoBehaviour
 {
-    // Start is called before the first frame update
+    public GameConstants gameConstants;
     private Rigidbody2D mushroomBody;
-
+    private SpriteRenderer mushroomSprite;
     private int moveRight = 1;
     public Vector2 initialForce = new Vector2(0f, 20f);
     public Vector2 fallingForce = new Vector2(-2f, -1f);
@@ -15,9 +15,12 @@ public class ConsumableMushroomController : MonoBehaviour
     private float speed = 6;
     private bool onGroundState = false;
     private bool hitPlayer = false;
+    private bool collected = false;
     void Start()
     {
         mushroomBody = GetComponent<Rigidbody2D>();
+        mushroomSprite = GetComponent<SpriteRenderer>();
+        mushroomSprite.drawMode = SpriteDrawMode.Sliced;
         if (mushroomBody.position.x < 0)
         {
             moveRight = 1;
@@ -33,7 +36,7 @@ public class ConsumableMushroomController : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        if (onGroundState && !hitPlayer)
+        if (onGroundState && !hitPlayer && !collected)
         {
             ComputeVelocity();
             MoveMushroom();
@@ -59,6 +62,8 @@ public class ConsumableMushroomController : MonoBehaviour
         if (col.gameObject.CompareTag("Player"))
         {
             hitPlayer = true;
+            collected = true;
+            StartCoroutine(scale());
         }
 
         if (col.gameObject.name == "PipeBody")
@@ -81,6 +86,21 @@ public class ConsumableMushroomController : MonoBehaviour
 
     void OnBecameInvisible()
     {
-        Destroy(gameObject);
+        // Destroy(gameObject);
+    }
+
+    IEnumerator scale()
+    {
+        int steps = 5;
+        float stepper = (gameConstants.enlargeScale - 1) / (float)steps;
+
+        for (int i = 0; i < steps; i++)
+        {
+            mushroomSprite.size += new Vector2(stepper, stepper);
+            yield return null;
+        }
+        collected = true;
+        this.transform.localScale = new Vector3(0, 0, 0);
+        // this.gameObject.SetActive(false);
     }
 }

@@ -7,6 +7,8 @@ public class BreakBrick : MonoBehaviour
     // Start is called before the first frame update
     private bool broken = false;
     public GameObject prefab;
+    public GameObject coinObject;
+    public AudioSource shatterAudio;
     void Start()
     {
 
@@ -31,6 +33,9 @@ public class BreakBrick : MonoBehaviour
             gameObject.transform.parent.GetComponent<SpriteRenderer>().enabled = false;
             gameObject.transform.parent.GetComponent<BoxCollider2D>().enabled = false;
             GetComponent<EdgeCollider2D>().enabled = false;
+            shatterAudio.PlayOneShot(shatterAudio.clip);
+            Vector3 coinPosition = new Vector3(transform.position.x, transform.position.y + 2, transform.position.z);
+            Instantiate(coinObject, coinPosition, Quaternion.identity);
         }
     }
 

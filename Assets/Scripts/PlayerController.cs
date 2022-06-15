@@ -12,7 +12,7 @@ public class PlayerController : MonoBehaviour
     public float speed;
 
     private MenuController menuController;
-    private EnemyController enemyController;
+    private EnemyControllerLab1 enemyController;
     private Rigidbody2D marioBody;
     private SpriteRenderer marioSprite;
     private bool gameOver = false;
@@ -28,14 +28,15 @@ public class PlayerController : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        Debug.Log("Player controller started");
         Application.targetFrameRate = 30;
         marioBody = GetComponent<Rigidbody2D>();
         marioSprite = GetComponent<SpriteRenderer>();
         menuController = FindObjectOfType<MenuController>();
-        enemyController = FindObjectOfType<EnemyController>();
+        enemyController = FindObjectOfType<EnemyControllerLab1>();
         marioAnimator = GetComponent<Animator>();
         marioAudio = GetComponent<AudioSource>();
+
+        GameManager.OnPlayerDeath += PlayerDiesSequence;
     }
 
     // Update is called once per frame
@@ -66,17 +67,27 @@ public class PlayerController : MonoBehaviour
             }
         }
 
+        if (Input.GetKeyDown("k"))
+        {
+            CentralManager.centralManagerInstance.consumePowerup(KeyCode.K, this.gameObject);
+        }
+
+        if (Input.GetKeyDown("l"))
+        {
+            CentralManager.centralManagerInstance.consumePowerup(KeyCode.L, this.gameObject);
+        }
+
         marioAnimator.SetFloat("xSpeed", Mathf.Abs(marioBody.velocity.x));
 
         // when jumping, and Gomba is near Mario and we haven't registered our score
-        if (!onGroundState && countScoreState && !gameOver)
-        {
-            if (Mathf.Abs(transform.position.x - enemyLocation.position.x) < 0.5f)
-            {
-                countScoreState = false;
-                score++;
-            }
-        }
+        // if (!onGroundState && countScoreState && !gameOver)
+        // {
+        //     if (Mathf.Abs(transform.position.x - enemyLocation.position.x) < 0.5f)
+        //     {
+        //         countScoreState = false;
+        //         score++;
+        //     }
+        // }
     }
 
     void FixedUpdate()
@@ -100,7 +111,7 @@ public class PlayerController : MonoBehaviour
             {
                 marioBody.AddForce(Vector2.up * upSpeed, ForceMode2D.Impulse);
                 onGroundState = false;
-                countScoreState = true; //check if Gomba is underneath
+                // countScoreState = true; //check if Gomba is underneath
 
                 marioAnimator.SetBool("onGround", onGroundState);
             }
@@ -116,10 +127,10 @@ public class PlayerController : MonoBehaviour
             countScoreState = false; // reset score state
             marioAnimator.SetBool("onGround", onGroundState);
             dustCloud.Play();
-            if (!gameOver)
-            {
-                scoreText.text = "Score: " + score.ToString();
-            }
+            // if (!gameOver)
+            // {
+            //     // scoreText.text = "Score: " + score.ToString();
+            // }
         };
 
         if (col.gameObject.CompareTag("Obstacle") && !onGroundState && Mathf.Abs(marioBody.velocity.y) <= 0.01f)
@@ -130,16 +141,16 @@ public class PlayerController : MonoBehaviour
         }
     }
 
-    void OnTriggerEnter2D(Collider2D other)
-    {
-        if (other.gameObject.CompareTag("Enemy") && !gameOver)
-        {
-            gameOver = true;
-            marioBody.velocity = Vector2.zero;
-            menuController.SetGameOver();
-            enemyController.SetGameOver();
-        }
-    }
+    // void OnTriggerEnter2D(Collider2D other)
+    // {
+    //     if (other.gameObject.CompareTag("Enemy") && !gameOver)
+    //     {
+    //         gameOver = true;
+    //         marioBody.velocity = Vector2.zero;
+    //         menuController.SetGameOver();
+    //         enemyController.SetGameOver();
+    //     }
+    // }
 
     public void RestartGame()
     {
@@ -157,6 +168,31 @@ public class PlayerController : MonoBehaviour
     void PlayJumpSound()
     {
         marioAudio.PlayOneShot(marioAudio.clip);
+    }
+
+    void PlayerDiesSequence()
+    {
+        // Mario dies
+        Debug.Log("Mario dies");
+        // do whatever you want here, animate etc
+        // ...
+        StartCoroutine(flatten());
+    }
+
+    IEnumerator flatten()
+    {
+        int steps = 5;
+        float stepper = 1.0f / (float)steps;
+
+        for (int i = 0; i < steps; i++)
+        {
+            this.transform.localScale = new Vector3(this.transform.localScale.x - stepper, this.transform.localScale.y, this.transform.localScale.z);
+
+            // make sure enemy is still above ground
+            yield return null;
+        }
+        this.gameObject.SetActive(false);
+        yield break;
     }
 
 }
