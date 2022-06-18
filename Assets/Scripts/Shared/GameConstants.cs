@@ -29,8 +29,9 @@ public class GameConstants : ScriptableObject
     public int rotatorRotateSpeed = 6;
 
     // for EnemyController.cs
-    public float maxOffset = 4.5f;
+    public float maxOffset = 5f;
     public float enemyPatroltime = 1.5f;
+    public float groundDistance = -0.6f;
     public float groundSurface = -0.45f;
 
     // for ConsumableMushroomController.cs
@@ -38,6 +39,11 @@ public class GameConstants : ScriptableObject
 
     // for testing
     public int testValue;
+
+    // Mario basic starting values
+    public int playerMaxSpeed = 50;
+    public int playerMaxJumpSpeed = 17;
+    public int playerDefaultForce = 150;
 
     // // Start is called before the first frame update
     // void Start()

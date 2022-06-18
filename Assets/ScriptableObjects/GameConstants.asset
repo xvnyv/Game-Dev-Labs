@@ -19,4 +19,11 @@ MonoBehaviour:
   breakDebrisForce: 10
   spawnNumberOfDebris: 10
   rotatorRotateSpeed: 6
+  maxOffset: 4.5
+  enemyPatroltime: 1.5
+  groundSurface: -0.45
+  enlargeScale: 1.5
   testValue: 0
+  playerMaxSpeed: 10
+  playerMaxJumpSpeed: 17
+  playerDefaultForce: 300

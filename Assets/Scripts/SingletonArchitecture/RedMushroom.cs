@@ -22,7 +22,7 @@ public class RedMushroom : MonoBehaviour, ConsumableInterface
         if (col.gameObject.CompareTag("Player"))
         {
             // update UI
-            CentralManager.centralManagerInstance.addPowerup(t, 1, this);
+            // CentralManager.centralManagerInstance.addPowerup(t, 1, this);
             GetComponent<Collider2D>().enabled = false;
         }
     }

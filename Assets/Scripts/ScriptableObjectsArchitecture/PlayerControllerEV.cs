@@ -1,29 +1,27 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.UI;
 
-public class PlayerController : MonoBehaviour
+public class PlayerControllerEV : MonoBehaviour
 {
-    public Transform enemyLocation;
-    public Text scoreText;
-    public float maxSpeed = 10;
-    public float upSpeed = 10;
-    public float speed;
+    private float force;
+    public IntVariable marioUpSpeed;
+    public IntVariable marioMaxSpeed;
+    public GameConstants gameConstants;
+    public CustomCastEvent castPowerup;
 
-    private MenuController menuController;
-    private EnemyControllerLab1 enemyController;
     private Rigidbody2D marioBody;
     private SpriteRenderer marioSprite;
-    private bool gameOver = false;
     private bool faceRightState = true;
-    private int score = 0;
-    private bool countScoreState = false;
     private bool onGroundState = true;
     private Animator marioAnimator;
     private AudioSource marioAudio;
-
     public ParticleSystem dustCloud;
+    private bool isDead = false;
+    // private bool isADKeyUp = true;
+    private bool countScoreState = false;
+    // private bool isADKeyDown = false;
+    // private bool isSpacebarDown = false;
 
     // Start is called before the first frame update
     void Start()
@@ -31,17 +29,24 @@ public class PlayerController : MonoBehaviour
         Application.targetFrameRate = 30;
         marioBody = GetComponent<Rigidbody2D>();
         marioSprite = GetComponent<SpriteRenderer>();
-        menuController = FindObjectOfType<MenuController>();
-        enemyController = FindObjectOfType<EnemyControllerLab1>();
         marioAnimator = GetComponent<Animator>();
         marioAudio = GetComponent<AudioSource>();
 
-        GameManager.OnPlayerDeath += PlayerDiesSequence;
+        marioUpSpeed.SetValue(gameConstants.playerMaxJumpSpeed);
+        marioMaxSpeed.SetValue(gameConstants.playerMaxSpeed);
+        force = gameConstants.playerDefaultForce;
     }
 
     // Update is called once per frame
     void Update()
     {
+        // isADKeyUp = Input.GetKeyUp("a") || Input.GetKeyUp("d");
+        // isADKeyDown = Input.GetKeyDown("a") || Input.GetKeyDown("d");
+        // isSpacebarDown = Input.GetKeyDown("space");
+
+        // Debug.Log("Is AD key up: " + isADKeyUp);
+        // Debug.Log("Is space key up: " + isSpacebarUp);
+
         // toggle state
         if (Input.GetKeyDown("a") && faceRightState)
         {
@@ -66,54 +71,47 @@ public class PlayerController : MonoBehaviour
                 marioAnimator.SetTrigger("onSkid");
             }
         }
-
-        if (Input.GetKeyDown("k"))
-        {
-            CentralManager.centralManagerInstance.consumePowerup(KeyCode.K, this.gameObject);
-        }
-
-        if (Input.GetKeyDown("l"))
-        {
-            CentralManager.centralManagerInstance.consumePowerup(KeyCode.L, this.gameObject);
-        }
-
         marioAnimator.SetFloat("xSpeed", Mathf.Abs(marioBody.velocity.x));
 
-        // when jumping, and Gomba is near Mario and we haven't registered our score
-        // if (!onGroundState && countScoreState && !gameOver)
-        // {
-        //     if (Mathf.Abs(transform.position.x - enemyLocation.position.x) < 0.5f)
-        //     {
-        //         countScoreState = false;
-        //         score++;
-        //     }
-        // }
+        if (Input.GetKeyDown("z"))
+        {
+            // cast powerup in first slot
+            castPowerup.Invoke(KeyCode.Z);
+        }
+
+        if (Input.GetKeyDown("w"))
+        {
+            // cast powerup in second slot
+            castPowerup.Invoke(KeyCode.W);
+        }
     }
 
     void FixedUpdate()
     {
-        if (!gameOver)
+        if (!isDead)
         {
+
             float moveHorizontal = Input.GetAxis("Horizontal");
             if (Mathf.Abs(moveHorizontal) > 0)
             {
                 Vector2 movement = new Vector2(moveHorizontal, 0);
-                if (marioBody.velocity.magnitude < maxSpeed)
-                    marioBody.AddForce(movement * speed);
+                if (marioBody.velocity.magnitude < marioMaxSpeed.Value)
+                {
+                    marioBody.AddForce(movement * 40);
+                }
+            }
+            if (Input.GetKeyDown("space") && onGroundState)
+            {
+                marioBody.AddForce(Vector2.up * marioUpSpeed.Value, ForceMode2D.Impulse);
+                onGroundState = false;
+                countScoreState = true; //check if Gomba is underneath
+
+                marioAnimator.SetBool("onGround", onGroundState);
             }
             if (Input.GetKeyUp("a") || Input.GetKeyUp("d"))
             {
                 // stop
                 marioBody.velocity = Vector2.zero;
-            }
-
-            if (Input.GetKeyDown("space") && onGroundState)
-            {
-                marioBody.AddForce(Vector2.up * upSpeed, ForceMode2D.Impulse);
-                onGroundState = false;
-                // countScoreState = true; //check if Gomba is underneath
-
-                marioAnimator.SetBool("onGround", onGroundState);
             }
         }
     }
@@ -121,16 +119,12 @@ public class PlayerController : MonoBehaviour
     // called when the cube hits the floor
     void OnCollisionEnter2D(Collision2D col)
     {
-        if (col.gameObject.CompareTag("Ground") && !gameOver)
+        if (col.gameObject.CompareTag("Ground") && !isDead)
         {
             onGroundState = true; // back on ground
             countScoreState = false; // reset score state
             marioAnimator.SetBool("onGround", onGroundState);
             dustCloud.Play();
-            // if (!gameOver)
-            // {
-            //     // scoreText.text = "Score: " + score.ToString();
-            // }
         };
 
         if (col.gameObject.CompareTag("Obstacle") && !onGroundState && Mathf.Abs(marioBody.velocity.y) <= 0.01f)
@@ -141,43 +135,17 @@ public class PlayerController : MonoBehaviour
         }
     }
 
-    // void OnTriggerEnter2D(Collider2D other)
-    // {
-    //     if (other.gameObject.CompareTag("Enemy") && !gameOver)
-    //     {
-    //         gameOver = true;
-    //         marioBody.velocity = Vector2.zero;
-    //         menuController.SetGameOver();
-    //         enemyController.SetGameOver();
-    //     }
-    // }
-
-    public void RestartGame()
-    {
-        gameOver = false;
-        score = 0;
-        countScoreState = false;
-        scoreText.text = "Score: 0";
-        marioSprite.transform.position = new Vector2(0, 0);
-        marioSprite.flipX = false;
-        onGroundState = true;
-        faceRightState = true;
-        marioAnimator.SetBool("onGround", onGroundState);
-    }
-
     void PlayJumpSound()
     {
         marioAudio.PlayOneShot(marioAudio.clip);
     }
 
-    void PlayerDiesSequence()
+    public void PlayerDiesSequence()
     {
-        // Mario dies
-        Debug.Log("Mario dies");
-        // do whatever you want here, animate etc
-        // ...
+        isDead = true;
         StartCoroutine(flatten());
     }
+
 
     IEnumerator flatten()
     {

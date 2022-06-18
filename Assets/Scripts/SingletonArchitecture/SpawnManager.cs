@@ -31,6 +31,13 @@ public class SpawnManager : MonoBehaviour
         StartCoroutine(delayedSpawnEnemy());
     }
 
+    IEnumerator delayedSpawnEnemy()
+    {
+        yield return new WaitForSecondsRealtime(1);
+        ObjectType enemyType = (ObjectType)values.GetValue(random.Next(values.Length));
+        spawnFromPooler(enemyType);
+    }
+
     public void initSpawning()
     {
         for (int j = 0; j < 2; j++)
@@ -53,12 +60,5 @@ public class SpawnManager : MonoBehaviour
         {
             Debug.Log("not enough items in the pool.");
         }
-    }
-
-    IEnumerator delayedSpawnEnemy()
-    {
-        yield return new WaitForSecondsRealtime(1);
-        ObjectType enemyType = (ObjectType)values.GetValue(random.Next(values.Length));
-        spawnFromPooler(enemyType);
     }
 }
