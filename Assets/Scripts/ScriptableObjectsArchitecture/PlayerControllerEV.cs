@@ -79,10 +79,10 @@ public class PlayerControllerEV : MonoBehaviour
             castPowerup.Invoke(KeyCode.Z);
         }
 
-        if (Input.GetKeyDown("w"))
+        if (Input.GetKeyDown("x"))
         {
             // cast powerup in second slot
-            castPowerup.Invoke(KeyCode.W);
+            castPowerup.Invoke(KeyCode.X);
         }
     }
 

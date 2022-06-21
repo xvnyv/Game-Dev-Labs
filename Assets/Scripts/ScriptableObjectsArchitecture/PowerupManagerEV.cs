@@ -38,7 +38,7 @@ public class PowerupManagerEV : MonoBehaviour
             }
         }
         keyCodePowerupMap.Add(KeyCode.Z, 0);
-        keyCodePowerupMap.Add(KeyCode.W, 1);
+        keyCodePowerupMap.Add(KeyCode.X, 1);
     }
 
     public void resetPowerup()
